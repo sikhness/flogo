@@ -30,7 +30,7 @@
     },
     {
       "name": "objectContent",
-      "type": "string"
+      "type": "object"
     },
     {
       "name": "writeOption",
