@@ -33,14 +33,10 @@
       "type": "string"
     },
     {
-      "name": "overwriteObject",
-      "type": "boolean",
-      "value": true
-    },
-    {
-      "name": "appendToObject",
-      "type": "boolean",
-      "value": false
+      "name": "writeOption",
+      "type": "string",
+      "value": "NEW",
+      "allowed": ["NEW", "OVERWRITE", "APPEND"]
     }
   ],
   "outputs": [

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io/ioutil"
+	"strings"
 
 	"cloud.google.com/go/storage"
 	"github.com/TIBCOSoftware/flogo-lib/core/activity"
@@ -12,17 +13,20 @@ import (
 )
 
 const (
-	methodWrite  = "WRITE"
-	methodRead   = "READ"
-	methodDelete = "DELETE"
+	operationWrite  = "WRITE"
+	operationRead   = "READ"
+	operationDelete = "DELETE"
+
+	writeOptionNew       = "NEW"
+	writeOptionOverwrite = "OVERWRITE"
+	writeOptionAppend    = "APPEND"
 
 	ivJSONCredentials = "jsonCredentials"
 	ivBucketName      = "bucketName"
 	ivOperation       = "operation"
 	ivObjectName      = "objectName"
 	ivObjectContent   = "objectContent"
-	ivOverwriteObject = "overwriteObject"
-	ivAppendToObject  = "appendToObject"
+	ivWriteOption     = "writeOption"
 
 	ovOutput = "output"
 )
@@ -64,7 +68,7 @@ func loginGCP(ctx context.Context, jsonCredentials string) (*storage.Client, err
 // Function to write text to a given object.  Information can be overwriten to an existing object and can
 // also be appended to the given object
 func writeObject(ctx context.Context, bkt *storage.BucketHandle, objectName string, objectContent string,
-	overwriteObject bool, appendToObject bool) (err error) {
+	writeOption string) (err error) {
 
 	// Initialize the Object within the bucket. You can specify a folder structure as part of the
 	// objectName as well
@@ -73,27 +77,8 @@ func writeObject(ctx context.Context, bkt *storage.BucketHandle, objectName stri
 	// Initialize a new writer to the Object to prepare for writing
 	w := obj.NewWriter(ctx)
 
-	if overwriteObject {
-		if appendToObject {
-			// Read current Object object content
-			currentObjectContent, err := readObject(ctx, bkt, objectName)
-			if err != nil {
-				return err
-			}
-
-			// Append text to current Object
-			_, err = w.Write([]byte(currentObjectContent + objectContent))
-			if err != nil {
-				return err
-			}
-		} else {
-			// Overwrite text into the Object
-			_, err = w.Write([]byte(objectContent))
-			if err != nil {
-				return err
-			}
-		}
-	} else {
+	switch strings.ToUpper(writeOption) {
+	case writeOptionNew:
 		// Check to see if current Object exists by getting its contents
 		currentObjectContent, err := readObject(ctx, bkt, objectName)
 
@@ -106,8 +91,26 @@ func writeObject(ctx context.Context, bkt *storage.BucketHandle, objectName stri
 		_, err = w.Write([]byte(objectContent))
 		if err != nil {
 			return err
-
 		}
+	case writeOptionAppend:
+		// Read current Object object content (if exists)
+		currentObjectContent, err := readObject(ctx, bkt, objectName)
+
+		// Append text to current Object
+		_, err = w.Write([]byte(currentObjectContent + objectContent))
+		if err != nil {
+			return err
+		}
+	case writeOptionOverwrite:
+		// Overwrite text into the Object
+
+		_, err = w.Write([]byte(objectContent))
+		if err != nil {
+			return err
+		}
+	default:
+		err = errors.New("Unsupported write option")
+		return err
 	}
 
 	// Close object after write is completed
@@ -174,33 +177,33 @@ func (a *MyActivity) Eval(ctx activity.Context) (done bool, err error) {
 	operation, _ := ctx.GetInput(ivOperation).(string)
 	objectName, _ := ctx.GetInput(ivObjectName).(string)
 	objectContent, _ := ctx.GetInput(ivObjectContent).(string)
-	overwriteObject, _ := ctx.GetInput(ivOverwriteObject).(bool)
-	appendToObject, _ := ctx.GetInput(ivAppendToObject).(bool)
+	writeOption, _ := ctx.GetInput(ivWriteOption).(string)
 
 	gcpctx := context.Background()
 	client, err := loginGCP(gcpctx, jsonCredentials)
 
 	bkt := client.Bucket(bucketName)
 
-	switch operation {
-	case methodWrite:
-		err = writeObject(gcpctx, bkt, objectName, objectContent, overwriteObject, appendToObject)
+	switch strings.ToUpper(operation) {
+	case operationWrite:
+		err = writeObject(gcpctx, bkt, objectName, objectContent, writeOption)
 		if err != nil {
 			return false, err
 		}
-	case methodRead:
+	case operationRead:
 		objectContent, err = readObject(gcpctx, bkt, objectName)
 		if err != nil {
 			return false, err
 		}
 		ctx.SetOutput(ovOutput, objectContent)
-	case methodDelete:
+	case operationDelete:
 		err = deleteObject(gcpctx, bkt, objectName)
 		if err != nil {
 			return false, err
 		}
 	default:
-		panic("Unsupported operation")
+		err = errors.New("Unsupported operation")
+		return false, err
 	}
 
 	// Evaluation complete, no errors
