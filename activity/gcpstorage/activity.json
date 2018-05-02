@@ -1,6 +1,7 @@
 {
   "name": "gcpstorage",
   "type": "flogo:activity",
+  "ref": "github.com/sikhness/flogo/activity/gcpstorage",
   "version": "0.0.1",
   "title": "Google Cloud Platform - Storage",
   "description": "Manage Google Cloud Platform - Storage objects",
