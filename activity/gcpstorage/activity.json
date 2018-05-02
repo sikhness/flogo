@@ -6,7 +6,7 @@
   "title": "Google Cloud Platform - Storage",
   "description": "Manage Google Cloud Platform - Storage objects",
   "author": "Yoyodyne",
-  "input":[
+  "inputs":[
     {
       "name": "jsonCredentials",
       "type": "string",
@@ -43,7 +43,7 @@
       "value": false
     }
   ],
-  "output": [
+  "outputs": [
     {
       "name": "output",
       "type": "any"
