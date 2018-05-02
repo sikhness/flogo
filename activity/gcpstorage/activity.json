@@ -33,12 +33,12 @@
     },
     {
       "name": "overwriteObject",
-      "type": "bool",
+      "type": "boolean",
       "value": true
     },
     {
       "name": "appendToObject",
-      "type": "bool",
+      "type": "boolean",
       "value": false
     }
   ],
