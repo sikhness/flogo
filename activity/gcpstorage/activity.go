@@ -3,6 +3,7 @@ package gcpstorage
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"strings"
 
@@ -176,8 +177,8 @@ func (a *MyActivity) Eval(ctx activity.Context) (done bool, err error) {
 	bucketName, _ := ctx.GetInput(ivBucketName).(string)
 	operation, _ := ctx.GetInput(ivOperation).(string)
 	objectName, _ := ctx.GetInput(ivObjectName).(string)
-	objectContent, _ := ctx.GetInput(ivObjectContent).(string)
 	writeOption, _ := ctx.GetInput(ivWriteOption).(string)
+	objectContent := fmt.Sprintf("%v", ctx.GetInput(ivObjectContent))
 
 	gcpctx := context.Background()
 	client, err := loginGCP(gcpctx, jsonCredentials)
