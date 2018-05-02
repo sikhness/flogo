@@ -1,11 +1,11 @@
 {
   "name": "gcpstorage",
-  "version": "0.0.1",
   "type": "flogo:activity",
+  "version": "0.0.1",
   "title": "Google Cloud Platform - Storage",
   "description": "Manage Google Cloud Platform - Storage objects",
   "author": "Yoyodyne",
-  "inputs":[
+  "input":[
     {
       "name": "jsonCredentials",
       "type": "string",
@@ -42,7 +42,7 @@
       "value": false
     }
   ],
-  "outputs": [
+  "output": [
     {
       "name": "output",
       "type": "any"
