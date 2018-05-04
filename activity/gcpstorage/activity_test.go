@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	jsonCredentials = `<<Private Key JSON Credentials`
+	jsonCredentials = `<<Private Key JSON Credentials>>`
 	bucketName      = "<<Bucket Name>>"
 	objectName      = "<<Object Name>>"
 )
