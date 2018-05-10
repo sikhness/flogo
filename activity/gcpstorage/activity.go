@@ -196,8 +196,6 @@ func (a *MyActivity) Eval(ctx activity.Context) (done bool, err error) {
 	}
 	objectACLList, _ := ctx.GetInput(ivACLUsers).(map[string]string)
 
-	fmt.Println("objectContent value is: " + objectContent)
-
 	gcpctx := context.Background()
 	client, err := loginGCP(gcpctx, jsonCredentials)
 
