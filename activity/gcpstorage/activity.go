@@ -28,6 +28,7 @@ const (
 	ivObjectName      = "objectName"
 	ivObjectContent   = "objectContent"
 	ivWriteOption     = "writeOption"
+	ivACLUsers        = "objectACLList"
 
 	ovOutput = "output"
 )
@@ -69,7 +70,7 @@ func loginGCP(ctx context.Context, jsonCredentials string) (*storage.Client, err
 // Function to write text to a given object.  Information can be overwriten to an existing object and can
 // also be appended to the given object
 func writeObject(ctx context.Context, bkt *storage.BucketHandle, objectName string, objectContent string,
-	writeOption string) (err error) {
+	writeOption string, objectACLList map[string]string) (err error) {
 
 	// Initialize the Object within the bucket. You can specify a folder structure as part of the
 	// objectName as well
@@ -77,6 +78,14 @@ func writeObject(ctx context.Context, bkt *storage.BucketHandle, objectName stri
 
 	// Initialize a new writer to the Object to prepare for writing
 	w := obj.NewWriter(ctx)
+
+	// Iterate through objectACLList to set the permissions of the object in GCP Storage.
+	// If there are any errors, ACLs are reverted to default
+	aclRuleList := []storage.ACLRule{}
+	for aclUser, aclRole := range objectACLList {
+		aclRuleList = append(aclRuleList, storage.ACLRule{Entity: storage.ACLEntity(aclUser), Role: storage.ACLRole(aclRole)})
+	}
+	w.ACL = aclRuleList
 
 	switch strings.ToUpper(writeOption) {
 	case writeOptionNew:
@@ -179,6 +188,7 @@ func (a *MyActivity) Eval(ctx activity.Context) (done bool, err error) {
 	objectName, _ := ctx.GetInput(ivObjectName).(string)
 	writeOption, _ := ctx.GetInput(ivWriteOption).(string)
 	objectContent := fmt.Sprintf("%v", ctx.GetInput(ivObjectContent))
+	objectACLList, _ := ctx.GetInput(ivACLUsers).(map[string]string)
 
 	gcpctx := context.Background()
 	client, err := loginGCP(gcpctx, jsonCredentials)
@@ -187,7 +197,7 @@ func (a *MyActivity) Eval(ctx activity.Context) (done bool, err error) {
 
 	switch strings.ToUpper(operation) {
 	case operationWrite:
-		err = writeObject(gcpctx, bkt, objectName, objectContent, writeOption)
+		err = writeObject(gcpctx, bkt, objectName, objectContent, writeOption, objectACLList)
 		if err != nil {
 			return false, err
 		}

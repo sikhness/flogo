@@ -37,6 +37,10 @@
       "type": "string",
       "value": "NEW",
       "allowed": ["NEW", "OVERWRITE", "APPEND"]
+    },
+    {
+      "name": "objectACLList",
+      "type": "params"
     }
   ],
   "outputs": [
