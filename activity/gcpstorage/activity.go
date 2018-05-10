@@ -22,6 +22,9 @@ const (
 	writeOptionOverwrite = "OVERWRITE"
 	writeOptionAppend    = "APPEND"
 
+	userPrefix = "user"
+	rolePrefix = "role"
+
 	ivJSONCredentials = "jsonCredentials"
 	ivBucketName      = "bucketName"
 	ivOperation       = "operation"
@@ -80,12 +83,15 @@ func writeObject(ctx context.Context, bkt *storage.BucketHandle, objectName stri
 	w := obj.NewWriter(ctx)
 
 	// Iterate through objectACLList to set the permissions of the object in GCP Storage.
-	// If there are any errors, ACLs are reverted to default
-	aclRuleList := []storage.ACLRule{}
-	for aclUser, aclRole := range objectACLList {
-		aclRuleList = append(aclRuleList, storage.ACLRule{Entity: storage.ACLEntity(aclUser), Role: storage.ACLRole(strings.ToUpper(aclRole))})
+	// If no ACLs are provided, then they are reverted to GCP Storage defaults
+	if objectACLList != nil {
+		aclRuleList, err := createACLRuleList(objectACLList)
+		if err != nil {
+			return err
+		}
+
+		w.ACL = aclRuleList
 	}
-	w.ACL = aclRuleList
 
 	switch strings.ToUpper(writeOption) {
 	case writeOptionNew:
@@ -131,6 +137,33 @@ func writeObject(ctx context.Context, bkt *storage.BucketHandle, objectName stri
 
 	// Write succesful, no errors
 	return nil
+}
+
+// Function that verifies the user and role ACL List exist correctly
+// in objectACLList and creates the ACLRule list to attach to the object
+func createACLRuleList(objectACLList map[string]string) (aclRuleList []storage.ACLRule, err error) {
+
+	for key, value := range objectACLList {
+		if strings.HasPrefix(key, userPrefix) {
+			commonKey := key[len(userPrefix):]               // The common key value (ie: the 1 in user1)
+			roleValue := objectACLList[("role" + commonKey)] // The value of the associated role (ie: if user1, then value of role1)
+
+			// Checks to see if associated role exists for the defined user
+			if len(roleValue) <= 0 {
+				return nil, errors.New("Role associated to user " + value + " does not exist, or not entered correctly in objectACLList")
+			}
+
+			// Append to overall ACLRule list
+			aclRuleList = append(aclRuleList, storage.ACLRule{Entity: storage.ACLEntity(value), Role: storage.ACLRole(strings.ToUpper(roleValue))})
+		} else if strings.HasPrefix(key, rolePrefix) {
+			// Do Nothing and continue with loop, roles are handled above
+		} else {
+			return nil, errors.New("Key value " + key + " defined in objectACLList is not valid. Use only matching user<<number>> and role<<number>> as the keys")
+		}
+	}
+
+	// Return constructed ACLRule object if no errors returned
+	return aclRuleList, nil
 }
 
 // Function to read text from a given object

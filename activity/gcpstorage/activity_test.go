@@ -30,11 +30,15 @@ const (
 	user: The user, group, project, or domain name to grant access. More information can be found in the link
 	above. Example syntax for a user type would be "user-gcpuser@gmail.com"
 	role: Can be either READER, WRITER, or OWNER
+
+	Ensure user and role key values are incremented for each subsequent ACL rule (ie: user1, role1, user2, role2)
 	*/
 	objectACLList = `{
-			"user-<<USER EMAIL>>": "OWNER",
-			"user-<<USER EMAIL>>": "READER"
-	  }`
+		"user1": "user-<<USER EMAIL>>",
+		"role2": "OWNER",
+		"user2": "user-<<USER EMAIL>>",
+		"role2": "READER"
+  }`
 )
 
 var activityMetadata *activity.Metadata
@@ -82,6 +86,7 @@ func TestCreateObject(t *testing.T) {
 	tc.SetInput("objectName", objectName)
 	tc.SetInput("objectContent", "This text was input from the TestCreateObject test method\n")
 	tc.SetInput("writeOption", "NEW")
+	tc.SetInput("objectACLList", objectACLList)
 
 	_, err := act.Eval(tc)
 	if err != nil {
