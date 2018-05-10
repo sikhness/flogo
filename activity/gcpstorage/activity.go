@@ -83,7 +83,7 @@ func writeObject(ctx context.Context, bkt *storage.BucketHandle, objectName stri
 	// If there are any errors, ACLs are reverted to default
 	aclRuleList := []storage.ACLRule{}
 	for aclUser, aclRole := range objectACLList {
-		aclRuleList = append(aclRuleList, storage.ACLRule{Entity: storage.ACLEntity(aclUser), Role: storage.ACLRole(aclRole)})
+		aclRuleList = append(aclRuleList, storage.ACLRule{Entity: storage.ACLEntity(aclUser), Role: storage.ACLRole(strings.ToUpper(aclRole))})
 	}
 	w.ACL = aclRuleList
 
@@ -189,6 +189,8 @@ func (a *MyActivity) Eval(ctx activity.Context) (done bool, err error) {
 	writeOption, _ := ctx.GetInput(ivWriteOption).(string)
 	objectContent := fmt.Sprintf("%v", ctx.GetInput(ivObjectContent))
 	objectACLList, _ := ctx.GetInput(ivACLUsers).(map[string]string)
+
+	fmt.Println("objectContent value is: + objectContent")
 
 	gcpctx := context.Background()
 	client, err := loginGCP(gcpctx, jsonCredentials)
