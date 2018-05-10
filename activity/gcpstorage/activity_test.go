@@ -35,7 +35,7 @@ const (
 	*/
 	objectACLList = `{
 		"user1": "user-<<USER EMAIL>>",
-		"role2": "OWNER",
+		"role1": "OWNER",
 		"user2": "user-<<USER EMAIL>>",
 		"role2": "READER"
   }`
