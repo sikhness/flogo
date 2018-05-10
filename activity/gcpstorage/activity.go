@@ -187,10 +187,16 @@ func (a *MyActivity) Eval(ctx activity.Context) (done bool, err error) {
 	operation, _ := ctx.GetInput(ivOperation).(string)
 	objectName, _ := ctx.GetInput(ivObjectName).(string)
 	writeOption, _ := ctx.GetInput(ivWriteOption).(string)
+
 	objectContent := fmt.Sprintf("%v", ctx.GetInput(ivObjectContent))
+	// When entering nothing for objectContent from the FlogoUI, this prevents
+	// it from printing <nil>
+	if objectContent == "<nil>" {
+		objectContent = ""
+	}
 	objectACLList, _ := ctx.GetInput(ivACLUsers).(map[string]string)
 
-	fmt.Println("objectContent value is:" + objectContent)
+	fmt.Println("objectContent value is: " + objectContent)
 
 	gcpctx := context.Background()
 	client, err := loginGCP(gcpctx, jsonCredentials)
