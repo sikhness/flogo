@@ -68,7 +68,7 @@ Inputs and Outputs:
 | objectContent      | False    | The text content to add to the object |
 | writeOption        | False    | The write option to be performed when writing an object (Allowed values are NEW, OVERWRITE, APPEND) |
 | objectACLList      | False    | The ACL users and roles to assign to the object. This should follow the JSON example below with role being either OWNER, READER, or WRITER | 
-###objectACLList Example
+### objectACLList Example
 ```json 
 {
 	"user1": "user-<<USER EMAIL>>",
