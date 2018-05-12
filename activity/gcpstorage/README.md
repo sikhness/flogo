@@ -67,11 +67,13 @@ Inputs and Outputs:
 | objectName         | True     | The name of the object to work with within the bucket |
 | objectContent      | False    | The text content to add to the object |
 | writeOption        | False    | The write option to be performed when writing an object (Allowed values are NEW, OVERWRITE, APPEND) |
-| objectACLList      | False    | The ACL users and roles to assign to the object. This should follow the following JSON example: 
+| objectACLList      | False    | The ACL users and roles to assign to the object. This should follow the JSON example below with role being either OWNER, READER, or WRITER | 
+###objectACLList Example
 ```json 
 {
-		"user1": "user-<<USER EMAIL>>",
-		"role1": "OWNER",
-		"user2": "user-<<USER EMAIL>>",
-		"role2": "READER"
-  } ```|
+	"user1": "user-<<USER EMAIL>>",
+	"role1": "OWNER",
+	"user2": "user-<<USER EMAIL>>",
+	"role2": "READER"
+} 
+```
